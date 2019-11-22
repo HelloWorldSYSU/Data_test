@@ -6,32 +6,38 @@ var DB_PATH = 'mongodb://localhost:27017/'
 
 
 var server = http.createServer(function (req, res) {
-	var path = url.parse(req.url).pathname
-	console.log(path)
-	console.log("received")	
-	if(path == "/register" && req.method === 'POST'){
-		var data = ''
-		console.log('Good')
-		req.on('data', function (chunk) {
-			data += chunk
-		})
+    var path = url.parse(req.url).pathname
+    console.log(path)
+    console.log("received") 
+    if(path == "/register" && req.method === 'POST'){
+        var data = ''
+        console.log('Good')
+        req.on('data', function (chunk) {
+            data += chunk
+        })
 
-		req.on('end', function () {
-			var dataObject = JSON.parse(data);
-			console.log(dataObject[1][1]);
-		})
-	}
+        req.on('end', function () {
+            var dataObject = JSON.parse(data);
+            console.log(dataObject[1][1]);
+        })
 
-})
+        MongoClient.connect(DB_PATH, function(err, db, data){
+            var dbo = db.db('admin')
+             console.log("connnect successfully!")
+             insertData(dbo, data, function(result){
+                 console.log(result)
+                 db.close()
+        })
+    }
+)
 
 server.listen(80, "0.0.0.0")
 console.log("running");
 
-var insertData = function(db, callback){
+var insertData = function(db, data, callback){
 
          var collection = db.collection('userInfo')
 
-         var data = [{"name":"sysumach","age":19},{"name":"kaijie","age":19}];
          collection.insert(data, function(err, result){
                 if(err)
                 {
@@ -42,10 +48,4 @@ var insertData = function(db, callback){
         });
 }
 
-MongoClient.connect(DB_PATH, function(err, db){
-        var dbo = db.db('admin')
-      console.log("connnect successfully!")
-         insertData(dbo, function(result){
-                 console.log(result)
-                 db.close()
-         })
+
